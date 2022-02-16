@@ -72,7 +72,7 @@ function Decoder(bytes, port) {
     }
 
     decoded.occupied = (1 === bytes[0]) ? true : false;
-    decoded.temperature = bytes[1] & 0x80 ? bytes[1] - 0x100 : bytes[1]
+    decoded.temperature = decodeTemperature(bytes[1])
   }
 
   // Startup packets are on port 3
@@ -204,6 +204,16 @@ function Decoder(bytes, port) {
     decoded.timestamp = (bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]
   }
 
+  if(7 === port) {
+
+    decoded.packet_type = "Temperature alert";
+    decoded.temperature = decodeTemperature[bytes[0]]
+  }
+  
   return decoded;
 
+}
+
+function decodeTemperature(byte) {
+  return byte & 0x80 ? byte - 0x100 : byte
 }
