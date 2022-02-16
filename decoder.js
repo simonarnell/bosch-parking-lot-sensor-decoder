@@ -8,50 +8,50 @@
  * Extended by Simon Arnell at Configured Things Ltd. - simon.arnell@configuredthings.com
  */
 
-const debug_codes = {
-  201: "LoRa join request failed",
-  208: "Cause for last reset: Watchdog",
-  209: "Cause for last reset: Power-on",
-  210: "Cause for last reset: Unknown",
-  215: "Cause for last reset: Lockup",
-  216: "Cause for last reset: External PIN",
-  217: "Cause for last reset: Brown-out",
-  404: "Park detection algorithm recalibrating",
-  717: "Confirmed uplink message not acknowledged after 8 re-tries",
-  720: "LoRa join request failed",
-  729: "Confirmed uplink message not acknowledged after 8 re-tries",
-  800: "Invalid downlink message port",
-  802: "Invalid downlink message length",
-  804: "Invalid frame type request",
-  805: "Configuration selected was already active",
-  808: "Invalid DataRate value selected (port 52, ADR ON)",
-  809: "Invalid Parking status configuration selected (port 51, ADR ON)",
-  810: "Invalid Debug configuration selected (port 56, ADR ON)",
-  880: "Invalid value for DataRate (port 52)",
-  881: "Invalid length for DataRate (port 52)",
-  882: "Invalid value for Device Information Request (port 54)",
-  883: "Invalid length for Device Information Request (port 54)",
-  884: "Invalid value for Parking status confirmable configuration (port 51)",
-  885: "Invalid length for Parking status confirmable configuration (port 51)",
-  886: "WARNING: Heartbeat test mode enabled! (port 53)",
-  887: "Invalid value for Heartbeat frequency (port 53)",
-  888: "Invalid length for Heartbeat frequency (port 53)",
-  889: "Invalid value for Debug configuration (port 56)",
-  890: "Invalid length for Debug configuration (port 56)",
-  891: "Invalid value for Temperature measurements configuration (port 57)",
-  892: "Invalid length for Temperature measurements configuration (port 57)",
-  893: "Invalid value for Device Usage Request (port 55)",
-  894: "Invalid length for Device Usage Request (port 55)",
-  895: "Invalid value for ADR configuration request (port 58)",
-  896: "Invalid length for ADR configuration request (port 58)",
-  897: "Invalid value for ADR offset request (port 59)",
-  898: "Invalid length for ADR offset request (port 59)",
-  899: "Invalid user request",
-  900: "Invalid value for temperature threshold configuration request (port 60)",
-  901: "Invalid value for temperature threshold offset configuration request (port 60)",
-  902: "Invalid length for temperature threshold configuration request (port 60)",
-  1001: "User configuration parameters are recovered",
-  1003: "Communication parameters are recovered"
+var debug_codes = {
+  "201": "LoRa join request failed",
+  "208": "Cause for last reset: Watchdog",
+  "209": "Cause for last reset: Power-on",
+  "210": "Cause for last reset: Unknown",
+  "215": "Cause for last reset: Lockup",
+  "216": "Cause for last reset: External PIN",
+  "217": "Cause for last reset: Brown-out",
+  "404": "Park detection algorithm recalibrating",
+  "717": "Confirmed uplink message not acknowledged after 8 re-tries",
+  "720": "LoRa join request failed",
+  "729": "Confirmed uplink message not acknowledged after 8 re-tries",
+  "800": "Invalid downlink message port",
+  "802": "Invalid downlink message length",
+  "804": "Invalid frame type request",
+  "805": "Configuration selected was already active",
+  "808": "Invalid DataRate value selected (port 52, ADR ON)",
+  "809": "Invalid Parking status configuration selected (port 51, ADR ON)",
+  "810": "Invalid Debug configuration selected (port 56, ADR ON)",
+  "880": "Invalid value for DataRate (port 52)",
+  "881": "Invalid length for DataRate (port 52)",
+  "882": "Invalid value for Device Information Request (port 54)",
+  "883": "Invalid length for Device Information Request (port 54)",
+  "884": "Invalid value for Parking status confirmable configuration (port 51)",
+  "885": "Invalid length for Parking status confirmable configuration (port 51)",
+  "886": "WARNING: Heartbeat test mode enabled! (port 53)",
+  "887": "Invalid value for Heartbeat frequency (port 53)",
+  "888": "Invalid length for Heartbeat frequency (port 53)",
+  "889": "Invalid value for Debug configuration (port 56)",
+  "890": "Invalid length for Debug configuration (port 56)",
+  "891": "Invalid value for Temperature measurements configuration (port 57)",
+  "892": "Invalid length for Temperature measurements configuration (port 57)",
+  "893": "Invalid value for Device Usage Request (port 55)",
+  "894": "Invalid length for Device Usage Request (port 55)",
+  "895": "Invalid value for ADR configuration request (port 58)",
+  "896": "Invalid length for ADR configuration request (port 58)",
+  "897": "Invalid value for ADR offset request (port 59)",
+  "898": "Invalid length for ADR offset request (port 59)",
+  "899": "Invalid user request",
+  "900": "Invalid value for temperature threshold configuration request (port 60)",
+  "901": "Invalid value for temperature threshold offset configuration request (port 60)",
+  "902": "Invalid length for temperature threshold configuration request (port 60)",
+  "1001": "User configuration parameters are recovered",
+  "1003": "Communication parameters are recovered"
 }
 
 function Decoder(bytes, port) {
@@ -80,10 +80,14 @@ function Decoder(bytes, port) {
   if(3 === port) {
     
     decoded.packet_type = "Startup";
-    
-    // Bytes 0 - 11 are debug info
-    decoded.debug = bytes.slice(0, 12);
-    
+    // Bytes 0 - 9 are debug info
+    var debug_obj = decodeDebugMessage(bytes.slice(0, 10))
+
+    decoded.sequence_number = debug_obj.sequence_number
+    decoded.debug_code = debug_obj.debug_code
+    decoded.debug_code_description = debug_obj.debug_code_description
+    decoded.timestamp = debug_obj.timestamp
+
     // Bytes 12 - 14 are firmware version, convert to string
     decoded.firmware_version = bytes[12] + '.' + bytes[13] + '.' + bytes[14];
     
@@ -151,30 +155,30 @@ function Decoder(bytes, port) {
     switch (bytes[0]) {
       case 0:
         decoded.packet_type += " - Number of parking status changes detected"
-        decoded.parking_status_changes = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        decoded.parking_status_changes = (bytes[1] << 24) + (bytes[2] << 16) + (bytes[3] << 8) + bytes[4]
         break;
       case 1:
         decoded.packet_type += " - Time running in occupied state"
-        decoded.time_in_occupied_state_seconds = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        decoded.time_in_occupied_state_seconds = (bytes[1] << 24) + (bytes[2] << 16) + (bytes[3] << 8) + bytes[4]
         break;
       case 2:
         decoded.packet_type += " - Number of uplink messages sent"
         decoded_uplink_messages_sent = {
-          dr5_sf7: (bytes[18] << 16) + (bytes[17] << 8) + bytes[16],
-          dr4_sf8: (bytes[15] << 16) + (bytes[14] << 8) + bytes[13],
-          dr3_sf9: (bytes[12] << 16) + (bytes[11] << 8) + bytes[10],
-          dr2_sf10: (bytes[9] << 16) + (bytes[8] << 8) + bytes[7],
-          dr1_sf11: (bytes[6] << 16) + (bytes[5] << 8) + bytes[4],
-          dr0_sf12: (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+          dr5_sf7: (bytes[16] << 16) + (bytes[17] << 8) + bytes[18],
+          dr4_sf8: (bytes[13] << 16) + (bytes[14] << 8) + bytes[15],
+          dr3_sf9: (bytes[10] << 16) + (bytes[11] << 8) + bytes[12],
+          dr2_sf10: (bytes[7] << 16) + (bytes[8] << 8) + bytes[9],
+          dr1_sf11: (bytes[4] << 16) + (bytes[5] << 8) + bytes[7],
+          dr0_sf12: (bytes[1] << 16) + (bytes[2] << 8) + bytes[3]
         }
         break;
       case 3:
         decoded.packet_type += " - Number of times the radar has been triggered"
-        decoded.times_radar_triggered = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        decoded.times_radar_triggered = (bytes[1] << 24) + (bytes[2] << 16) + (bytes[3] << 8) + bytes[4]
         break;
       case 4:
         decoded.packet_type += " - Time running since restart"
-        decoded.time_since_restart_seconds = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        decoded.time_since_restart_seconds = (bytes[1] << 24) + (bytes[2] << 16) + (bytes[3] << 8) + bytes[4]
         break;
       case 5:
         decoded.packet_type += " - Number of resets since installation"
@@ -189,7 +193,7 @@ function Decoder(bytes, port) {
         break;
       case 6:
         decoded.packet_type += " - Time running since installation"
-        decoded.time_since_install = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        decoded.time_since_install = (bytes[1] << 24) + (bytes[2] << 16) + (bytes[3] << 8) + bytes[4]
         break;
       default:
         break;
@@ -197,12 +201,14 @@ function Decoder(bytes, port) {
   }
 
   if(6 === port) {
-
     decoded.packet_type = "Debug";
-    decoded.sequence_number = (bytes[9] << 8) + bytes[8]
-    decoded.debug_code = (bytes[7] & 0xf) << 8 + bytes[6]
-    decoded.debug_code_description = debug_codes[decoded.debug_code]
-    decoded.timestamp = (bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]
+    
+    var debug_obj = decodeDebugMessage(bytes)
+
+    decoded.sequence_number = debug_obj.sequence_number
+    decoded.debug_code = debug_obj.debug_code
+    decoded.debug_code_description = debug_obj.debug_code_description
+    decoded.timestamp = debug_obj.timestamp
   }
 
   if(7 === port) {
@@ -213,6 +219,20 @@ function Decoder(bytes, port) {
   
   return decoded;
 
+}
+
+function decodeDebugMessage(bytes) {
+  var debug_code = decodeDebugCode(bytes.slice(4,8))
+  return {
+    sequence_number: (bytes[8] << 8) + bytes[9],
+    debug_code: debug_code,
+    debug_code_description: debug_codes[debug_code],
+    timestamp: (bytes[0] << 24) + (bytes[1] << 16) + (bytes[2] << 8) + bytes[3]
+  }
+}
+
+function decodeDebugCode(bytes) {
+  return ((bytes[2] & 0xf) << 8) + bytes[3]
 }
 
 function decodeTemperature(byte) {
