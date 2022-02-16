@@ -26,7 +26,7 @@ function Decoder(bytes, port) {
     }
 
     decoded.occupied = (1 === bytes[0]) ? true : false;
-    
+    decoded.temperature = bytes[1] & 0x80 ? bytes[1] - 0x100 : bytes[1]
   }
 
   // Startup packets are on port 3
