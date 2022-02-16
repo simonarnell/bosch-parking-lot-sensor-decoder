@@ -45,13 +45,19 @@ function Decoder(bytes, port) {
     
     switch (bytes[15]) {
       case 1: decoded.reset_reason = "Watchdog";
-              break;
+        break;
       case 2: decoded.reset_reason = "Power On";
-              break;
+        break;
       case 3: decoded.reset_reason = "System Request";
-              break;
-      case 4: decoded.reset_reason = "Other";
-              break;
+        break;
+      case 4: decoded.reset_reason = "External Pin";
+        break;
+      case 5: decoded.reset_reason = "Lockup";
+        break;
+      case 6: decoded.reset_reason = "Brownout";
+        break;
+      case 7: decoded.reset_reason = "Others";
+        break;
       default: decoded.reset_reason = "Unknown";
     } 
     
