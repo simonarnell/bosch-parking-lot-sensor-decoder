@@ -68,6 +68,34 @@ function Decoder(bytes, port) {
     }
   }
 
+  if(4 === port) {
+
+    decoded.packet_type = "Device Information";
+
+    switch (bytes.length) {
+      // if there are three bytes to the packet then it's the firmware version
+      case 3: 
+        decoded.packet_type += " - Firmware version"
+        decoded.firmware_version = bytes[0] + '.' + bytes[1] + '.' + bytes[2];
+        break;
+      // if there are eleven bytes to the packet then it's the devices uniform resource name
+      case 11:
+        decoded.packet_type += " - Device URN"
+        // Bytes 0 - 2 are the first six digits of the DevEUI whilst bytes 6 - 10 are the remaining 10 digits, convert to string
+        decoded.devEUI = bytes[0].toString(16) + bytes[1].toString(16) + bytes[2].toString(16) + bytes[6].toString(16) + bytes[7].toString(16) + bytes[8].toString(16) + bytes[9].toString(16) + bytes[10].toString(16)
+        decoded.productClass = {
+          // Bits 7 - 4 of byte 3 when added to byte 4 form the least significant bits of the product code, convert to string
+          productCode: ((bytes[4] << 4) + (bytes[3] >> 4)) == 0x001 ? "PLS" : "Unknown",
+          // Bits 0 - 3 of byte 3 form the variant code, convert to string
+          variantCode: bytes[3] & 0xf,
+          // Byte 5 is the product class extension code which seemes to encode the LoRa frequency band, convert to string
+          extension: bytes[5] == 0x00 ? "EU868" : bytes[5] == 0x01 ? "AS923" : "Unknown",
+        }
+        break;
+      default:
+        break;
+    }
+  }
   return decoded;
 
 }
