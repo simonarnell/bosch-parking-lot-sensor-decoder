@@ -163,7 +163,7 @@ function Decoder(bytes, port) {
         break;
       case 2:
         decoded.packet_type += " - Number of uplink messages sent"
-        decoded_uplink_messages_sent = {
+        decoded.uplink_messages_sent = {
           dr5_sf7: (bytes[16] << 16) + (bytes[17] << 8) + bytes[18],
           dr4_sf8: (bytes[13] << 16) + (bytes[14] << 8) + bytes[15],
           dr3_sf9: (bytes[10] << 16) + (bytes[11] << 8) + bytes[12],
