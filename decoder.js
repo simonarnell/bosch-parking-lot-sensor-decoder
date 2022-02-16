@@ -5,6 +5,7 @@
  * https://connectedthings.store/lorawan-sensors/bosch-parking-lot-sensors.html
  *
  * This function was created by Al Bennett at Sensational Systems - al@sensational.systems
+ * Extended by Simon Arnell at Configured Things Ltd. - simon.arnell@configuredthings.com
  */
 
 const debug_codes = {
