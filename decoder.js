@@ -96,6 +96,58 @@ function Decoder(bytes, port) {
         break;
     }
   }
+
+  if(5 === port) {
+
+    decoded.packet_type = "Device Usage";
+
+    switch (bytes[0]) {
+      case 0:
+        decoded.packet_type += " - Number of parking status changes detected"
+        decoded.parking_status_changes = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        break;
+      case 1:
+        decoded.packet_type += " - Time running in occupied state"
+        decoded.time_in_occupied_state_seconds = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        break;
+      case 2:
+        decoded.packet_type += " - Number of uplink messages sent"
+        decoded_uplink_messages_sent = {
+          dr5_sf7: (bytes[18] << 16) + (bytes[17] << 8) + bytes[16],
+          dr4_sf8: (bytes[15] << 16) + (bytes[14] << 8) + bytes[13],
+          dr3_sf9: (bytes[12] << 16) + (bytes[11] << 8) + bytes[10],
+          dr2_sf10: (bytes[9] << 16) + (bytes[8] << 8) + bytes[7],
+          dr1_sf11: (bytes[6] << 16) + (bytes[5] << 8) + bytes[4],
+          dr0_sf12: (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        }
+        break;
+      case 3:
+        decoded.packet_type += " - Number of times the radar has been triggered"
+        decoded.times_radar_triggered = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        break;
+      case 4:
+        decoded.packet_type += " - Time running since restart"
+        decoded.time_since_restart_seconds = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        break;
+      case 5:
+        decoded.packet_type += " - Number of resets since installation"
+        decoded.resets_since_install = {
+          software_requested: (bytes[7] << 8) + bytes[6],
+          watchdog: bytes[5],
+          power_on: bytes[4],
+          external_pin: bytes[3],
+          lockup: bytes[2],
+          brown_out: bytes[1]
+        }
+        break;
+      case 6:
+        decoded.packet_type += " - Time running since installation"
+        decoded.time_since_install = (bytes[4] << 24) + (bytes[3] << 16) + (bytes[2] << 8) + bytes[1]
+        break;
+      default:
+        break;
+    }
+  }
   return decoded;
 
 }
