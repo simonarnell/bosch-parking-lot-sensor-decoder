@@ -7,6 +7,52 @@
  * This function was created by Al Bennett at Sensational Systems - al@sensational.systems
  */
 
+const debug_codes = {
+  201: "LoRa join request failed",
+  208: "Cause for last reset: Watchdog",
+  209: "Cause for last reset: Power-on",
+  210: "Cause for last reset: Unknown",
+  215: "Cause for last reset: Lockup",
+  216: "Cause for last reset: External PIN",
+  217: "Cause for last reset: Brown-out",
+  404: "Park detection algorithm recalibrating",
+  717: "Confirmed uplink message not acknowledged after 8 re-tries",
+  720: "LoRa join request failed",
+  729: "Confirmed uplink message not acknowledged after 8 re-tries",
+  800: "Invalid downlink message port",
+  802: "Invalid downlink message length",
+  804: "Invalid frame type request",
+  805: "Configuration selected was already active",
+  808: "Invalid DataRate value selected (port 52, ADR ON)",
+  809: "Invalid Parking status configuration selected (port 51, ADR ON)",
+  810: "Invalid Debug configuration selected (port 56, ADR ON)",
+  880: "Invalid value for DataRate (port 52)",
+  881: "Invalid length for DataRate (port 52)",
+  882: "Invalid value for Device Information Request (port 54)",
+  883: "Invalid length for Device Information Request (port 54)",
+  884: "Invalid value for Parking status confirmable configuration (port 51)",
+  885: "Invalid length for Parking status confirmable configuration (port 51)",
+  886: "WARNING: Heartbeat test mode enabled! (port 53)",
+  887: "Invalid value for Heartbeat frequency (port 53)",
+  888: "Invalid length for Heartbeat frequency (port 53)",
+  889: "Invalid value for Debug configuration (port 56)",
+  890: "Invalid length for Debug configuration (port 56)",
+  891: "Invalid value for Temperature measurements configuration (port 57)",
+  892: "Invalid length for Temperature measurements configuration (port 57)",
+  893: "Invalid value for Device Usage Request (port 55)",
+  894: "Invalid length for Device Usage Request (port 55)",
+  895: "Invalid value for ADR configuration request (port 58)",
+  896: "Invalid length for ADR configuration request (port 58)",
+  897: "Invalid value for ADR offset request (port 59)",
+  898: "Invalid length for ADR offset request (port 59)",
+  899: "Invalid user request",
+  900: "Invalid value for temperature threshold configuration request (port 60)",
+  901: "Invalid value for temperature threshold offset configuration request (port 60)",
+  902: "Invalid length for temperature threshold configuration request (port 60)",
+  1001: "User configuration parameters are recovered",
+  1003: "Communication parameters are recovered"
+}
+
 function Decoder(bytes, port) {
 
   var decoded = {
@@ -148,6 +194,16 @@ function Decoder(bytes, port) {
         break;
     }
   }
+
+  if(6 === port) {
+
+    decoded.packet_type = "Debug";
+    decoded.sequence_number = (bytes[9] << 8) + bytes[8]
+    decoded.debug_code = (bytes[7] & 0xf) << 8 + bytes[6]
+    decoded.debug_code_description = debug_codes[decoded.debug_code]
+    decoded.timestamp = (bytes[3] << 24) + (bytes[2] << 16) + (bytes[1] << 8) + bytes[0]
+  }
+
   return decoded;
 
 }
