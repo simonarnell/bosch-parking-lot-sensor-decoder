@@ -15,6 +15,20 @@ function Decoder(bytes, port) {
     "packet_type": "Unknown"
   };
 
+    // Parking status packets are on port 1
+  // Heartbeat packets are on port 2, but the same as status packets, so handled the same
+  if(1 === port || 2 === port) {
+    
+    if(1 === port) {
+      decoded.packet_type = "Status";
+    } else {
+      decoded.packet_type = "Heartbeat";
+    }
+
+    decoded.occupied = (1 === bytes[0]) ? true : false;
+    
+  }
+
   // Startup packets are on port 3
   if(3 === port) {
     
@@ -47,21 +61,6 @@ function Decoder(bytes, port) {
       decoded.occupied = true;
     }
   }
-
-  // Parking status packets are on port 1
-  // Heartbeat packets are on port 2, but the same as status packets, so handled the same
-  if(1 === port || 2 === port) {
-    
-    if(1 === port) {
-      decoded.packet_type = "Status";
-    } else {
-      decoded.packet_type = "Heartbeat";
-    }
-
-    decoded.occupied = (1 === bytes[0]) ? true : false;
-    
-  }
-
 
   return decoded;
 
